@@ -1,0 +1,46 @@
+name: Build APK
+
+# Запускается при каждом пуше в main, и вручную кнопкой "Run workflow"
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Скачать код репозитория
+        uses: actions/checkout@v4
+
+      - name: Установить Java (нужна для сборки Android)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Установить Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Проверить окружение
+        run: flutter doctor -v
+
+      - name: Установить зависимости проекта
+        run: flutter pub get
+
+      - name: Статический анализ кода
+        run: flutter analyze
+        continue-on-error: true   # не роняем сборку из-за предупреждений, только показываем их
+
+      - name: Собрать APK (release)
+        run: flutter build apk --release
+
+      - name: Загрузить APK как артефакт
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
