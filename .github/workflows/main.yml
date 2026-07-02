@@ -26,7 +26,7 @@ jobs:
           channel: 'stable'
 
       - name: Проверить окружение
-        run: flutter doctor -v
+        run: flutter create . --force
 
       - name: Установить зависимости проекта
         run: flutter pub get
